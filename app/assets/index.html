@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>QuickLogic</title>
+    <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link href="stylesheets/app.css" rel="stylesheet" type="text/css">
+    <script src="javascripts/vendor.js"></script>
+    <!--script(src='javascripts/logic.js')-->
+    <script>require('main')</script>
+  </head>
+  <body>
+    <div id="toolbar">
+      <!---->
+      <!-- Creats a new HTML mixin which allows quick rendering of a tool-button.-->
+      <!---->
+      <!---->
+      <!-- Creates a new HTML mixin which allows consistent rendering of separators.-->
+      <!---->
+      <!--Render the toolbar:-->
+            <button id="btnNew" class="toolbutton">
+              <div class="i fa fa-bolt"><span>New</span></div>
+            </button><span class="separator">| </span>
+            <button id="btnOpen" class="toolbutton">
+              <div class="i fa fa-folder-open"><span>Open</span></div>
+            </button>
+      <div id="saveButtons"><span id="btnSave">&nbsp;</span>
+              <button id="btnSaveHTML5" class="toolbutton">
+                <div class="i fa fa-save"><span>Save</span></div>
+              </button>
+      </div><span class="separator">| </span>
+            <button id="btnSchematic" class="toolbutton">
+              <div class="i fa fa-gears"><span>Create Schematic</span></div>
+            </button><span class="separator">| </span>
+            <button id="btnHelp" class="toolbutton">
+              <div class="i fa fa-question-circle"><span>What do I do?</span></div>
+            </button>
+      <div class="logo"><span>Quick<strong>Logic</strong></span><span class="logobeta">beta</span></div>
+    </div>
+    <div id="staging"><i id="cancelOpen" class="icon-remove-sign"></i>
+      <form id="openform" action="open_helper.php" method="post" enctype="multipart/form-data">
+        <h1>Select a file:</h1>
+        <p>Use the controls below to select the file you'd like to open:</p><br>
+        <div id="fileControls">
+          <div id="fileOpenControl">
+            <input id="fileOpen" type="file" name="fileOpen" accept=".fsmd"><br>
+          </div>
+          <input id="fileSubmit" type="submit" name="fileSubmit" value="Open File">
+        </div>
+      </form>
+    </div>
+    <div id="cancelOpen">
+      <float>right</float>
+      <cursor>pointer</cursor>
+      <font-size>25px</font-size>
+    </div>
+    <div id="editorContainer">
+      <textarea id="mainEditor"></textarea>
+    </div>
+    <div id="helpPanel">
+      <h1>This'll be <em>easy</em>.</h1>
+      <p>Welcome to <strong>FSM</strong>Designer; a web-based tool for <em>Finite State Machine</em> entry. Capturing a Finite State Machine is easy! Just use the following controls:</p>
+      <ul>
+        <li><strong>Double click</strong> any blank space to create a new <em>state</em>.</li>
+        <li><strong>Single click</strong> any existing <em>state</em> to edit its name.</li>
+        <li><strong>Double click</strong> any existing <em>state</em> to edit its output (or outputs).</li>
+        <li><strong>Click</strong> any existing <em>state</em> or <em>transition</em> then press <span class="keyname">Delete</span> to delete it. <br/> If you're using a mac laptop, you'll need to press <span class="keyname">Fn</span>+<span class="keyname">Delete</span>.</li>
+        <li><strong><span class="keyname">Shift</span> + drag</strong> from one <em>state</em> to another to add a new <em>state transition</em>.</li>
+        <li><strong><span class="keyname">Shift</span> + drag</strong> from a blank space to an existing <em>state</em> to add a new <em>reset transition</em>.</li>
+        <li><strong><span class="keyname">Shift</span> + click</strong> any existing <em>state</em> to add a new <em>self-loop</em>.</li>
+        <p>Relax, and enjoy the FSM entry- <strong>FSM</strong>Designer has your back! <br/>  If you're using a modern browser, your work is constantly autosaved- so you're safe even if your browser crashes, or you accidentally navigate away.</p>
+        <div id="divDismissHelp">
+          <button id="btnDismissHelp" class="icon-edit">&nbsp;&nbsp;Let's get started!</button>
+        </div>
+      </ul>
+    </div>
+    <div id="backend">
+      <form id="genhdl" action="genhdl.php" method="POST">
+        <input id="toHDL" name="fsm">
+      </form>
+    </div>
+  </body>
+</html>

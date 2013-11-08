@@ -1,0 +1,34 @@
+#toolbar
+
+  //
+  // Creats a new HTML mixin which allows quick rendering of a tool-button.
+  //
+  mixin toolbutton(icon, id, text)
+    button.toolbutton(id=id, )
+      .i(class="fa fa-" + icon)
+        span=text
+
+  //
+  // Creates a new HTML mixin which allows consistent rendering of separators.
+  //
+  mixin separator
+    span.separator | 
+
+  
+  //Render the toolbar:
+  +toolbutton('bolt', 'btnNew', 'New')
+  +separator
+  +toolbutton('folder-open', 'btnOpen', 'Open') 
+  #saveButtons
+    span#btnSave &nbsp;
+    +toolbutton('save', 'btnSaveHTML5', 'Save') 
+  +separator
+  +toolbutton('gears', 'btnSchematic', 'Create Schematic')
+  +separator
+  +toolbutton('question-circle', 'btnHelp', 'What do I do?')
+
+  .logo
+    span Quick<strong>Logic</strong>
+    span.logobeta beta
+
+
