@@ -3,14 +3,16 @@ exports.config =
   files:
     javascripts:
       joinTo:
-        'javascripts/app.js': /^app.*\.coffee$/
+        'javascripts/app.js': /^(app.*\.coffee)|(app\/grammars.*\.js)$/
+
         'javascripts/vendor.js': /^vendor/
       order:
         before: []
 
     stylesheets:
       joinTo:
-        'stylesheets/app.css': /^(app|vendor).*styl/
+        'stylesheets/app.css': /^app.*styl/
+        'stylesheets/vendor.css': /^vendor.*css/
       order:
         before: []
         after: []

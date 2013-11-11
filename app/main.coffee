@@ -1,10 +1,10 @@
 ###
   
  [Hey, this is CoffeeScript! If you're looking for the original source,
-  look in "fsm.coffee", not "fsm.js".]
+  look in "file.coffee", not "file.js".]
 
- Finite State Machine Designer
- portions Copyright (c) Binghamton University,
+ QuickLogic Combinational Logic Designer
+ Copyright (c) Binghamton University,
  author: Kyle J. Temkin <ktemkin@binghamton.edu>
 
  Permission is hereby granted, free of charge, to any person
@@ -30,7 +30,7 @@
 ###
 
 
-{FSMDesignerApplication} = require 'fsm_designer_application'
+{QuickLogicApplication} = require 'application'
   
 #
 # Initialize the application.
@@ -39,11 +39,11 @@ window.onload = ->
 
   # Get the canvas on which the designer will be rendered,
   # and the text field which will be used for user input.
-  canvas     = document.getElementById('canvas')
-  text_field = document.getElementById('text_field')
+  textarea   = document.getElementById('mainEditor')
   toolbar    = document.getElementById('toolbar')
   file_form  = document.getElementById('staging')
+  sidebar    = document.getElementById('sidebar_content')
 
-  window.app = new FSMDesignerApplication(canvas, text_field, toolbar, file_form)
+  window.app = new QuickLogicApplication(textarea, sidebar, toolbar, file_form)
   app.run()
-  
+

@@ -1,15 +1,11 @@
 ###
   
  [Hey, this is CoffeeScript! If you're looking for the original source,
-  look in ".coffee" files, not "js" files.]
+  look in "file.coffee", not "file.js".]
 
- Finite State Machine Designer
- portions Copyright (c) Binghamton University,
+ QuickLogic Combinational Logic Designer
+ Copyright (c) Binghamton University,
  author: Kyle J. Temkin <ktemkin@binghamton.edu>
-
- Based on:
- Finite State Machine Designer (http://madebyevan.com/fsm/)
- portions Copyright (c) 2010 Evan Wallace
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -33,22 +29,17 @@
  OTHER DEALINGS IN THE SOFTWARE.
 ###
 
-{FSMDesigner} = require 'lib/fsm_designer'
+{LogicEquation} = require 'lib/logic_equation'
 
-class exports.FSMDesignerApplication
+class exports.QuickLogicApplication
 
   #
   # Perform the core JS start-up, once the window is ready.
   #
-  constructor: (@canvas, @text_field, @toolbar, @file_form=null) ->
+  constructor: (@editor_div, @sidebar, @toolbar, @file_form=null) ->
   
     # Create a basic data-store for the persistant features, like autosaving.
-    @datastore = new Persist.Store('FSMDesigner', {swf_path: 'flash/persist.swf'})
-
-    # Simple event handlers for the FSMDesigner, which handle autosave.
-    @designer_event_handlers =
-      redraw: @handle_redraw
-      resize: @handle_resize
+    @datastore = new Persist.Store('QuickLogic', {swf_path: 'flash/persist.swf'})
 
     # Sets up the local toolbar events.
     @set_up_toolbar()
@@ -64,6 +55,7 @@ class exports.FSMDesignerApplication
     # If we haven't seen this user before, show the help panel.
     @show_help() unless @datastore.get('seen')
 
+
   #
   # Sets up the handlers for all of the toolbar buttons.
   #
@@ -71,13 +63,9 @@ class exports.FSMDesignerApplication
 
     button_handlers =
       'btnNew':         @handle_new_click
-      'btnUndo':        @handle_undo_click
-      'btnRedo':        @handle_redo_click
       'btnOpen':        @handle_open_click
-      'btnSaveHTML5':   @handle_save_html5_click
-      'btnSavePNG':     @handle_save_png_click
-      'btnHelp':        @handle_help_click
-      'btnDismissHelp': @handle_dismiss_help_click
+      #'btnSaveHTML5':   @handle_save_html5_click
+      #'btnSavePNG':     @handle_save_png_click
 
     # Add each of the button handlers to their respective buttons.
     for id, handler of button_handlers
@@ -89,7 +77,7 @@ class exports.FSMDesignerApplication
 
   #
   # Set up a better download experience, on systems that support Flash.
-  # (The HTML5 download API doesn't allow a save dialog.)
+  # (The HTML5 download "API" currently doesn't allow a save dialog.)
   # 
   set_up_download_button: ->
 
@@ -97,16 +85,17 @@ class exports.FSMDesignerApplication
     download_button = document.getElementById('btnSaveHTML5')
 
     # If supported, create a better download button using Downloadify.
-    downloadify_options = 
+    downloadify_options =
       swf: 'flash/downloadify.swf'
       downloadImage: 'images/download.gif'
       width: download_button.offsetWidth
       height: download_button.offsetHeight
       append: true
       transparent: true
-      filename: 'FiniteStateMachine.fsmd'
-      data: => @designer.serialize()
+      filename: 'Design.eqs'
+      data: => @editor.getValue()
     Downloadify.create('btnSave', downloadify_options)
+
 
   #
   # Show the help panel.
@@ -121,74 +110,107 @@ class exports.FSMDesignerApplication
     @datastore.set('seen', true)
 
 
-
   #
   # Start the Application.
+  # This should be called once all of the preliminary setup is complete,
+  # and the application is ready to handle events.
   #
   run: =>
+
     # Attempt to fetch data regarding the last design, if it exists.
     last_design = @datastore.get('autosave')
+
+    # Create the base editor, which is the primary user interface.
+    @editor = ace.edit(@editor_div)
+    @editor.setValue(last_design)
+
+    @set_up_editor()
+
+  #
+  # Sets up the main editor, attaching the events necessary
+  # for the application to run.
+  #
+  set_up_editor: =>
+
+    #Update the editor's display each time the editor is changed.
+    @editor.on('change', @update_side_display)
+
+
+  #
+  # Handles updating of the side panel.
+  #
+  update_side_display: =>
+
+    #DEBUG ONLY
+    try
+      expression = new LogicEquation(@editor.getValue())
+      @render_truth_table(expression.truth_table())
+    catch error
+      console.log error
+
+
+  #
+  # Renders a truth table in the right-most pane.
+  #
+  render_truth_table: (truth_table) =>
+   
+    #Start an array of HTML fragments.
+    #(JavaScript strings are immutable, so string concatination
+    # is a heavy operation. We'll use an array, and join the 
+    # segments later.)
+    html = []
+
+    #Add a header labeling each of the inputs.
+    #TODO: Support multiple output functions?
+    html.push("<table class=\"truthtable\"><thead><tr>")
+    html.push("<th class=\"input\">#{input}</th>") for input in truth_table.inputs
+    html.push("<th class=\"output\">#{truth_table.output}</th>")
+    html.push("</tr></thead><tbody>")
+
+
+    #Iterate over each of the rows in the given truth table.
+    for row in truth_table.rows
+
+      #Break the truth table into its inputs and outputs.
+      [inputs, output] = row
+
+      #Output each of the inputs and outputs.
+      html.push("<tr>")
+      html.push("<td class=\"input\">#{inputs[input]}</td>") for input in truth_table.inputs
+      html.push("<td class=\"output\">#{output}</td>")
+      html.push("</tr>")
+
+
+    #And end the table.
+    html.push("</tbody></table>")
+
+    #Push the content into the side panel.
+    @set_side_panel_content(html.join(''))
+
+
+  #
+  # Sets the HTML content of the side panel;
+  # automatically adjusting its size, if necessary.
+  #
+  set_side_panel_content: (content) =>
+
+    #Adjust the raw content of the side-panel bar.
+    document.getElementById("sidebar_content").innerHTML = content
+
         
-    # If we were able to get a last design, re-create the FSM designer from the last serialized input.
-    if last_design?
-      @designer = FSMDesigner.unserialize(last_design, text_field, canvas, window, @designer_event_handlers)
-    else
-      @designer = new FSMDesigner(canvas, text_field,  window, @designer_event_handlers)
-
-  #
-  # Handles redraw events. Redraws are queued periodically,
-  # and on the event of a change; so they make a good time to autosave.
-  #
-  handle_redraw: (designer) =>
-
-    # Ensure this function isn't called until the deisgner has fully loaded.
-    return if not @designer?
-
-    # Auto-save the current FSM.
-    @datastore.set('autosave', @designer.serialize())
-
-    # Ensure the undo/redo buttons accurately reflect whether the user can undo and redo.
-    document.getElementById('btnUndo').disabled = not @designer.can_undo()
-    document.getElementById('btnRedo').disabled = not @designer.can_redo()
 
 
-  #
-  # Handles resizing of the owning window.
-  #
-  handle_resize: (canvas) =>
-  
-    # Resize the canvas' internal rendering sizes....
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight - @toolbar.offsetHeight - @toolbar.offsetTop
-  
-    # ... and ensure the canvas matches those sizes.
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
 
-  
+
   #
   # Handles a click on the new button.
   #
   handle_new_click: =>
-    @designer.clear()
+    @editor.setValue('')
 
 
   #
-  # Handles a click of the undo button.
-  #
-  handle_undo_click: =>
-    @designer.undo()
-
-
-  #
-  # Handles a click of the redo button.
-  #
-  handle_redo_click: =>
-      @designer.redo()
-
-
-  #
-  # Handles the "Save" button; saves a FSM file using a Data URI.
+  # Handles the "Save" button; saves an equation file using a Data URI.
   # This method is not preferred, but will be used if Flash cannot be found.
   #
   handle_save_html5_click: =>
@@ -197,14 +219,14 @@ class exports.FSMDesignerApplication
     content = @designer.serialize()
     
     #convert it to a data URI
-    uri_content = 'data:application/x-fsm,' + encodeURIComponent(content)
+    uri_content = 'data:application/x-eqs,' + encodeURIComponent(content)
     
     #and ask the user's browser to download it
     document.location.href = uri_content
 
-  handle_save_png_click: =>
-    @designer.export_png()
-
+  #
+  # TODO: Handle schematic generation!
+  #
 
   #
   # Handles clicks of the "open" toolbar button.
@@ -217,12 +239,14 @@ class exports.FSMDesignerApplication
     else
       @show_file_open_fallback()
 
+
   #
   # Fallback to server-side file opening, as the current browser
   # doesn't support it.
   #
   show_file_open_fallback: ->
     @set_element_opacity(@file_form, .95)
+
 
   #
   # Sets the file dialog's opacity.
@@ -240,6 +264,8 @@ class exports.FSMDesignerApplication
 
     @schedule_ui_event =>
       element.style.display = if value > 0 then 'block' else 'none'
+
+
 
   #
   # Handles cancellation of the file open dialog.
@@ -264,11 +290,12 @@ class exports.FSMDesignerApplication
     @set_element_opacity(helpPanel, 0)
 
   #
-  # Schedule a UI event, displacing any 
+  # Schedule a UI event, displacing any existing UI event.
   #
   schedule_ui_event: (event, timeout=100) =>
     clearTimeout(@active_ui_event) if @active_ui_event?
     setTimeout(event, timeout)
+
 
   
   #
@@ -283,5 +310,23 @@ class exports.FSMDesignerApplication
     return unless e?.target?.files?.length == 1
 
     # Open the relevant file.
-    @designer.load_from_file(e.target.files[0])
+    @load_from_file(e.target.files[0])
+
+    #TODO: De-select the given file?
+
+
+  #
+  # Loads a set of equations from an equation file.
+  #
+  load_from_file: (file) =>
+
+    #create a new FileReader, and instruct it to
+    # 1) read the file's contents, and
+    # 2) pass the result to the text editor
+    reader = new FileReader()
+    reader.onload = (file) => @editor.setValue(file.target.result)
+    reader.readAsText(file)
+
+
+
 

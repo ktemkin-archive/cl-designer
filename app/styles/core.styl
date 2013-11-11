@@ -7,7 +7,7 @@ non-selectable()
 
 ui-framing()
   position absolute
-  display block
+  //display block
 
 body
   overflow hidden
@@ -38,21 +38,24 @@ body
   non-selectable()
   -webkit-touch-callout none
 
+// The main editor itself, which will be replaced with a CodeMirror instance.
 #mainEditor
   non-selectable()
   ui-framing()
   height auto
-  width 100%
+  width auto
   margin 0px
-  padding 0px
   top 36px
   left 0px
-  right 0px
+  right 270px
   bottom 0px
   resize none
 
-  padding 10px
+  padding 10px !important
   font-size 25px
+  box-shadow -3 0 #eee
+
+
 
 
 
@@ -64,25 +67,10 @@ body
   a
     color #222
 
-#divDismissHelp
-  margin-top 25px
-  text-align center
-
 #fileSubmit
   margin-top 50px
 
-#btnDismissHelp
-  margin-top 20px
-  &:hover
-    background -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) )
-    background -moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% )
-    filter 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#dfdfdf", endColorstr="#ededed")'
-    background-color #dfdfdf
-  &:active
-    position relative
-    top 1px
 
-#btnDismissHelp,
 #fileSubmit
   margin 10px
   min-width 300px
@@ -108,8 +96,6 @@ body
   font-size 18px
   color #333
 
-
-
 .keyname
   font-weight 700
   border 1px solid #fff
@@ -120,7 +106,6 @@ body
   color #333
   margin 3px
 
-
 a
   color black
 p
@@ -130,11 +115,11 @@ p
 .center
   text-align center
 
-textarea
-  display none
-  width 75%
-  height 400px
-  margin 0 auto
+//textarea
+//  display none
+//  width 75%
+//  height 400px
+//  margin 0 auto
 
 #backend
   display none

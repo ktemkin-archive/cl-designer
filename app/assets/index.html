@@ -5,8 +5,9 @@
     <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
     <link href="stylesheets/app.css" rel="stylesheet" type="text/css">
+    <link href="stylesheets/vendor.css" rel="stylesheet" type="text/css">
     <script src="javascripts/vendor.js"></script>
-    <!--script(src='javascripts/logic.js')-->
+    <script src="javascripts/app.js"></script>
     <script>require('main')</script>
   </head>
   <body>
@@ -31,9 +32,6 @@
       </div><span class="separator">| </span>
             <button id="btnSchematic" class="toolbutton">
               <div class="i fa fa-gears"><span>Create Schematic</span></div>
-            </button><span class="separator">| </span>
-            <button id="btnHelp" class="toolbutton">
-              <div class="i fa fa-question-circle"><span>What do I do?</span></div>
             </button>
       <div class="logo"><span>Quick<strong>Logic</strong></span><span class="logobeta">beta</span></div>
     </div>
@@ -43,7 +41,7 @@
         <p>Use the controls below to select the file you'd like to open:</p><br>
         <div id="fileControls">
           <div id="fileOpenControl">
-            <input id="fileOpen" type="file" name="fileOpen" accept=".fsmd"><br>
+            <input id="fileOpen" type="file" name="fileOpen" accept=".eqs"><br>
           </div>
           <input id="fileSubmit" type="submit" name="fileSubmit" value="Open File">
         </div>
@@ -54,25 +52,9 @@
       <cursor>pointer</cursor>
       <font-size>25px</font-size>
     </div>
-    <div id="editorContainer">
-      <textarea id="mainEditor"></textarea>
-    </div>
-    <div id="helpPanel">
-      <h1>This'll be <em>easy</em>.</h1>
-      <p>Welcome to <strong>FSM</strong>Designer; a web-based tool for <em>Finite State Machine</em> entry. Capturing a Finite State Machine is easy! Just use the following controls:</p>
-      <ul>
-        <li><strong>Double click</strong> any blank space to create a new <em>state</em>.</li>
-        <li><strong>Single click</strong> any existing <em>state</em> to edit its name.</li>
-        <li><strong>Double click</strong> any existing <em>state</em> to edit its output (or outputs).</li>
-        <li><strong>Click</strong> any existing <em>state</em> or <em>transition</em> then press <span class="keyname">Delete</span> to delete it. <br/> If you're using a mac laptop, you'll need to press <span class="keyname">Fn</span>+<span class="keyname">Delete</span>.</li>
-        <li><strong><span class="keyname">Shift</span> + drag</strong> from one <em>state</em> to another to add a new <em>state transition</em>.</li>
-        <li><strong><span class="keyname">Shift</span> + drag</strong> from a blank space to an existing <em>state</em> to add a new <em>reset transition</em>.</li>
-        <li><strong><span class="keyname">Shift</span> + click</strong> any existing <em>state</em> to add a new <em>self-loop</em>.</li>
-        <p>Relax, and enjoy the FSM entry- <strong>FSM</strong>Designer has your back! <br/>  If you're using a modern browser, your work is constantly autosaved- so you're safe even if your browser crashes, or you accidentally navigate away.</p>
-        <div id="divDismissHelp">
-          <button id="btnDismissHelp" class="icon-edit">&nbsp;&nbsp;Let's get started!</button>
-        </div>
-      </ul>
+    <div id="mainEditor"></div>
+    <div id="sidebar">
+      <div id="sidebar_content"></div>
     </div>
     <div id="backend">
       <form id="genhdl" action="genhdl.php" method="POST">
