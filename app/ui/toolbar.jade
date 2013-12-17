@@ -22,8 +22,20 @@
   #saveButtons
     span#btnSave &nbsp;
     +toolbutton('save', 'btnSaveHTML5', 'Save') 
+
+
   +separator
-  +toolbutton('gears', 'btnSchematic', 'Create Schematic')
+  #vhdlButtons
+    span#btnVHDL &nbsp;
+    +toolbutton('tasks', 'btnVHDLHTML5', ' Export to VHDL')
+
+  +separator
+  +toolbutton('question-circle', 'btnHelp', ' What do I do?')
+
+  +separator
+  i.fa.fa-tag.toolicon
+  label.toolfield(for="designName") Design Name:
+  input#designName.toolfield(value="combinational")
 
   .logo
     span Quick<strong>Logic</strong>

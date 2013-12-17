@@ -44,7 +44,7 @@ class exports.LogicEquation
     '|': (a, b) -> a | b
     '^': (a, b) -> a ^ b
     '&': (a, b) -> a & b
-    '!': (a)    -> a
+    '!': (a)    => if parseInt(a) == 1 then 0 else 1
 
   #
   # Defines a set of transformations which convert 
@@ -59,13 +59,28 @@ class exports.LogicEquation
   #
   # Initializes a new LogicEquation object.
   #
-  constructor: (@expression) ->
+  constructor: (@raw) ->
+
+    #Convert new-lines to whitespace, and trim any leading/trailing whitespace.
+    @raw = @raw.replace("\n", " ").trim()
 
     #Parse the Logic Equation using PEG.js.
-    [command, @output, @parse_tree] = Parser.parse(@expression)
+    [command, @output, @parse_tree] = Parser.parse(@raw)
 
     #Extract all of the input names from the given parse tree.
     @read_input_names_from(@parse_tree)
+
+
+  #
+  # Factory method which creates a new LogicEquation object from an
+  # expression (as opposed to an equation).
+  #
+  @from_expression: (expression, output_name = 'output') ->
+
+    #TODO: Find a more elegant way of doing this that's less coupled to
+    #the internal grammar?
+    new LogicEquation("#{output_name} = #{expression}")
+
 
 
   #
@@ -118,11 +133,13 @@ class exports.LogicEquation
       #and return the result
       return operator(args...)
 
+    #Base case: if we have a literal, convert it to VHDL format.
+    else if expression == '1' or expression == '0' or expression == '-'
+      return "'#{expression}'"
+
     #Base case: if we can't evaluate the tree further, return it diretly.
     else
       return expression
-    
-
 
 
   #
