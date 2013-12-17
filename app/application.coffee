@@ -31,7 +31,12 @@
 
 {LogicEquation} = require 'lib/logic_equation'
 {VHDLExporter}  = require 'lib/exporters/vhdl_exporter'
+Range           = ace.require('ace/range').Range
 
+
+#
+# Main class for the QuickLogic application.
+#
 class exports.QuickLogicApplication
 
   default_name: 'combinational'
@@ -218,6 +223,9 @@ class exports.QuickLogicApplication
     # Ensure that the export button is only available for valid designs.
     document.getElementById('btnVHDLHTML5').disabled = not @is_valid()
     @_add_or_remove_class(document.getElementById('btnVHDLHTML5'), 'nonempty', not @empty())
+
+    # Validate the input, and highlight any errors that have occurred.
+    @validate()
   
   
   #
@@ -503,13 +511,31 @@ class exports.QuickLogicApplication
 
 
   #
+  # Returns the editor's raw input.
+  #
+  raw_input: =>
+    @editor.getValue()
+
+
+  #
+  # Returns an array of raw equations, as parsed from the editor input.
+  #
+  all_raw_equations: (include_blank = false )=>
+
+    #Split the editor by the "parse marks".
+    raw_equations = @editor.getValue().split(';')
+
+    #And return the list of non-empty equations.
+    (equation for equation in raw_equations when (equation.trim() != "" or include_blank))
+
+
+  #
   #
   # Returns an array of LogicEquation objects that describe the current editor input.
   #
-  all_equations: ->
+  all_equations: =>
     try
-      raw_equations = @editor.getValue().split(';')
-      new LogicEquation(equation) for equation in raw_equations when equation.trim() != ""
+      (new LogicEquation(equation) for equation in @all_raw_equations())
     catch
       false
 
@@ -603,6 +629,43 @@ class exports.QuickLogicApplication
   empty: =>
     @editor.getValue().trim() == ""
 
+
+  #
+  # Validates the set of equations, highlighting any invalid equations.
+  #
+  validate: =>
+
+    editor_session = @editor.getSession()
+    error_messages = @error_messages_for_equations()
+
+    @clear_all_errors()
+    
+    #Loop over each of the equations by their "range", which defines
+    #their start and end points.
+    for range, index in @ranges_for_equations()
+
+      #Skip any ranges that don't have a corresponding error messgae
+      continue unless index of error_messages
+      continue unless error_messages[index] 
+      
+      #Otherwise, add a marker.
+      editor_session.addMarker(range, 'malformed_line', 'malformed_line', true)
+
+
+  #
+  # Removes all error "markers" from the given file.
+  #
+  clear_all_errors: =>
+    editor_session = @editor.getSession()
+
+    for id, marker of editor_session.getMarkers(true)
+      console.log marker
+      continue unless marker.type == "malformed_line"
+      editor_session.removeMarker(marker.id)
+
+    
+
+
   #
   # Returns a value iff the given Finite State Machine is valid, to the best of
   # the designer's knowledge. This indicates whether it can succesfully be
@@ -635,7 +698,7 @@ class exports.QuickLogicApplication
 
       #Try to determine if the Finite State Machine has no arcs. 
       try
-        return " At least one of your <strong>equations</strong> appears to have been entered incorrectly." if @outputs().length == 0
+        return " You'll need to fix the <strong>underlined</strong> equations below before you can create logic." if @outputs().length == 0
 
       #If we run into an error enumerating outputs, we must have had an invalid output somewhere.
       #Notify the user.
@@ -647,6 +710,69 @@ class exports.QuickLogicApplication
 
       #If we don't have an invalid output, and the FSM _is_ invalid, then we must have an invalid arc.
       return " You'll need to fix the invalid <strong>equations</strong> below before you can create logic."
+
+
+  #
+  # Returns an array which contains an error message for each of the equations in the given file.
+  #
+  error_messages_for_equations: ->
+
+    results = []
+
+    #Iterate over each of the given equations.
+    for equation in @all_raw_equations(true)
+      try
+
+        #If this equation isn't blank, try to parse it.
+        new LogicEquation(equation) unless equation.trim() == ""
+        
+        #If we were able to do so, there's no error with this equation.
+        results.push(false)
+
+      #If we couldn't parse the expression, push the appropriate error message.
+      catch syntax_error
+        results.push(syntax_error)
+
+
+    results
+
+
+  #
+  # Returns editor range objects corresponding to each of the given equations.
+  #
+  ranges_for_equations: ->
+
+    results = []
+    start_of_expression = 0
+    editor_text = @raw_input()
+
+    #"Slide" over each of the expressions, pulling out the relevant ranges.
+    while start_of_expression < editor_text.length
+
+      #Find the next semicolon; or get the end of the string if it doesn't exist.
+      end_of_expression = editor_text.indexOf(';', start_of_expression)
+      end_of_expression = editor_text.length - 1 if end_of_expression == -1
+
+      #Add the current range to the list of ranges...
+      results.push(@range_between_indices(start_of_expression, end_of_expression))
+
+      #... and move to the start of the next expression.
+      start_of_expression = end_of_expression + 1
+
+
+    results
+
+
+  #
+  # Returns the editor range that spans from the start index to the end index.
+  #
+  range_between_indices: (start, end) =>
+
+    start_position = @editor_document().indexToPosition(start)
+    end_position   = @editor_document().indexToPosition(end)
+
+    #Convert the two positions to a range.
+    new Range(start_position.row, start_position.column, end_position.row, end_position.column)
 
 
   #
@@ -719,7 +845,7 @@ class exports.QuickLogicApplication
   #
   # Show the help panel.
   #
-  show_help: ->
+  show_help: =>
 
     # Show the help panel...
     helpPanel = document.getElementById('helpPanel')
@@ -727,4 +853,6 @@ class exports.QuickLogicApplication
 
     # ... and mark it as seen.
     @datastore.set('seen', true)
+
+
 
