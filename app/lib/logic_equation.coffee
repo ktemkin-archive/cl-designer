@@ -62,7 +62,7 @@ class exports.LogicEquation
   constructor: (@raw) ->
 
     #Convert new-lines to whitespace, and trim any leading/trailing whitespace.
-    @raw = @raw.replace("\n", " ").trim()
+    @raw = @raw.replace(/\s/g, ' ').trim()
 
     #Parse the Logic Equation using PEG.js.
     [command, @output, @parse_tree] = Parser.parse(@raw)

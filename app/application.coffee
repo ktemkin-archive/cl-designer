@@ -31,7 +31,7 @@
 
 {LogicEquation} = require 'lib/logic_equation'
 {VHDLExporter}  = require 'lib/exporters/vhdl_exporter'
-Range           = ace.require('ace/range').Range
+AceRange        = ace.require('ace/range').Range
 
 
 #
@@ -243,7 +243,6 @@ class exports.QuickLogicApplication
 
   replace_with_serialized: (serialized) =>
     data = JSON.parse(serialized)
-    console.log data
 
     @set_design_name(data.name)
     @editor.setValue(data.equations)
@@ -647,7 +646,7 @@ class exports.QuickLogicApplication
       #Skip any ranges that don't have a corresponding error messgae
       continue unless index of error_messages
       continue unless error_messages[index] 
-      
+
       #Otherwise, add a marker.
       editor_session.addMarker(range, 'malformed_line', 'malformed_line', true)
 
@@ -659,8 +658,8 @@ class exports.QuickLogicApplication
     editor_session = @editor.getSession()
 
     for id, marker of editor_session.getMarkers(true)
-      console.log marker
       continue unless marker.type == "malformed_line"
+      console.log marker
       editor_session.removeMarker(marker.id)
 
     
@@ -743,36 +742,45 @@ class exports.QuickLogicApplication
   ranges_for_equations: ->
 
     results = []
-    start_of_expression = 0
+    start_of_equation = 0
     editor_text = @raw_input()
 
     #"Slide" over each of the expressions, pulling out the relevant ranges.
-    while start_of_expression < editor_text.length
+    while start_of_equation < editor_text.length
 
       #Find the next semicolon; or get the end of the string if it doesn't exist.
-      end_of_expression = editor_text.indexOf(';', start_of_expression)
-      end_of_expression = editor_text.length - 1 if end_of_expression == -1
+      end_of_equation = editor_text.indexOf(';', start_of_equation)
+      end_of_equation = editor_text.length - 1 if end_of_equation == -1
+
+      start_of_equation += 1 while @_character_at_index_is_whitespace(editor_text, start_of_equation)
 
       #Add the current range to the list of ranges...
-      results.push(@range_between_indices(start_of_expression, end_of_expression))
+      results.push(@range_between_indices(start_of_equation, end_of_equation + 1))
 
       #... and move to the start of the next expression.
-      start_of_expression = end_of_expression + 1
-
+      start_of_equation = end_of_equation + 1
 
     results
+
+
+  #
+  # Returns true iff the character at the given index in the given string
+  # is a whitespace character.
+  #
+  _character_at_index_is_whitespace: (string, index) =>
+    /\s/.test(string.charAt(index))
+
 
 
   #
   # Returns the editor range that spans from the start index to the end index.
   #
   range_between_indices: (start, end) =>
-
     start_position = @editor_document().indexToPosition(start)
     end_position   = @editor_document().indexToPosition(end)
 
     #Convert the two positions to a range.
-    new Range(start_position.row, start_position.column, end_position.row, end_position.column)
+    return new AceRange(start_position.row, start_position.column, end_position.row, end_position.column)
 
 
   #
